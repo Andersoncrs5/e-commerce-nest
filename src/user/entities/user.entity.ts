@@ -21,6 +21,9 @@ export class User {
   @Column({ default: false })
   is_adm: boolean;
 
+  @Column({ nullable: true, type: 'text' })
+  refreshToken: string | null
+
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
