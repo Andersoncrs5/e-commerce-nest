@@ -1,6 +1,7 @@
 import { CryptoService } from 'CryptoService';
 import { Address } from 'src/address/entities/address.entity';
 import { Category } from 'src/category/entities/category.entity';
+import { Product } from 'src/product/entities/product.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BeforeUpdate, BeforeInsert, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 
 @Entity('users')
@@ -30,8 +31,11 @@ export class User {
   @JoinColumn()
   address: Address;
 
-  @OneToMany(() => Category, (Category) => Category.user)
-  categories: Category;
+  @OneToMany(() => Category, (category) => category.user)
+  categories: Category[];
+
+  @OneToMany(() => Product, (Product) => Product.user)
+  products: Product[];
 
   @BeforeInsert()
   @BeforeUpdate()
