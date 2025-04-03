@@ -1,6 +1,7 @@
-import { Category } from "src/category/entities/category.entity";
-import { User } from "src/user/entities/user.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Comment } from "@src/comment/entities/comment.entity";
+import { Category } from "../../category/entities/category.entity";
+import { User } from "../../user/entities/user.entity";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Product {
@@ -36,6 +37,9 @@ export class Product {
 
     @ManyToOne(() => User, (user) => user.products, { nullable: false, eager: true }) 
     user: User;
+
+    @OneToMany(() => Comment, (comment) => comment.product, { cascade: true })
+    comments: Comment[];
 
     @ManyToOne(() => Category, (category) => category.products, { nullable: false, eager: true }) 
     category: Category;

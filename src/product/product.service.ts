@@ -4,12 +4,12 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { v4 as uuidv4 } from 'uuid';
 import { omit } from 'lodash';
-import { CategoryService } from 'src/category/category.service';
-import { User } from 'src/user/entities/user.entity';
-import { Category } from 'src/category/entities/category.entity';
+import { CategoryService } from '../category/category.service';
+import { User } from '../user/entities/user.entity';
+import { Category } from '../category/entities/category.entity';
 import { isUUID } from 'class-validator';
 
 @Injectable()

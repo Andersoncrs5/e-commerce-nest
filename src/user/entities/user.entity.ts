@@ -1,12 +1,13 @@
-import { CryptoService } from 'CryptoService';
-import { Address } from 'src/address/entities/address.entity';
-import { Category } from 'src/category/entities/category.entity';
-import { Product } from 'src/product/entities/product.entity';
+import { CryptoService } from '../../../CryptoService';
+import { Address } from '../../address/entities/address.entity';
+import { Category } from '../../category/entities/category.entity';
+import { Comment } from '../../comment/entities/comment.entity';
+import { Product } from '../../product/entities/product.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BeforeUpdate, BeforeInsert, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: number;
 
   @Column({ length: 100 })
@@ -36,6 +37,9 @@ export class User {
 
   @OneToMany(() => Category, (category) => category.user)
   categories: Category[];
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[];
 
   @OneToMany(() => Product, (Product) => Product.user)
   products: Product[];

@@ -4,7 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CryptoService } from 'CryptoService';
+import { CryptoService } from '../../CryptoService';
 
 @Injectable()
 export class UserService {
@@ -39,21 +39,18 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    try {
-      if (!id || isNaN(id) || id <= 0) {
-        throw new BadRequestException('ID must be a positive number');
-      }
-
-      const user: User | null = await this.repository.findOne({ where : { id } });
-
-      if (user == null) {
-        throw new NotFoundException('User not found');
-      }
-
-      return user;
-    } catch (e) {
-      throw new InternalServerErrorException(e)
+    if (!id || isNaN(id) || id <= 0) {
+      throw new BadRequestException('ID must be a positive number');
     }
+
+    const user: User | null = await this.repository.findOne({ where : { id } });
+
+    if (user == null) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+    
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User | NotFoundException | null> {
