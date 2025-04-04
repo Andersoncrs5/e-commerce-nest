@@ -50,13 +50,25 @@ export class ProductService {
     }
   }
 
-  async findAll() {
+  async findAll(page: number, limit: number) {
     try {
-      return this.repository.find({ where: { is_active: true } });
-    } catch(error) {
-      throw new InternalServerErrorException(error);
+      const [products, count] = await this.repository.findAndCount({
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { id: 'ASC' }
+      });
+  
+      return {
+        data: products,
+        totalItems: count,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message || error);
     }
   }
+  
 
   async findOne(id: string): Promise<Product> {
     try {

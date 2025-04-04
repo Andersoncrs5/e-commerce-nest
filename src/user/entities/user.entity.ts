@@ -1,3 +1,4 @@
+import { Favorite } from '../../favorite/entity/favorite.entity';
 import { CryptoService } from '../../../CryptoService';
 import { Address } from '../../address/entities/address.entity';
 import { Category } from '../../category/entities/category.entity';
@@ -7,7 +8,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ length: 100 })
@@ -37,6 +38,9 @@ export class User {
 
   @OneToMany(() => Category, (category) => category.user)
   categories: Category[];
+
+  @OneToMany(() => Favorite, (Favorite) => Favorite.user)
+  favorites: Favorite[];
 
   @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[];

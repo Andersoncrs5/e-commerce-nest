@@ -1,11 +1,16 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException
+} from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { IsNull, Repository } from 'typeorm';
 import { Comment } from './entities/comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserService } from '@src/user/user.service';
-import { ProductService } from '@src/product/product.service';
+import { UserService } from '../user/user.service';
+import { ProductService } from '../product/product.service';
 import { isUUID } from 'class-validator';
 
 @Injectable()
@@ -15,22 +20,26 @@ export class CommentService {
     private readonly repository: Repository<Comment>,
     private readonly userService: UserService,
     private readonly productService: ProductService
-  ){}
+  ) {}
 
-  async create(userId: number, productId: string, createCommentDto: CreateCommentDto) {
+  async create(userId: number, productId: string, createCommentDto: CreateCommentDto): Promise<Comment> {
     const queryRunner = this.repository.manager.connection.createQueryRunner();
     await queryRunner.startTransaction();
-    
+
     try {
       const product = await this.productService.findOne(productId);
       const user = await this.userService.findOne(userId);
 
-      const data = { ...createCommentDto, user, product }
+      const data = this.repository.create({
+        ...createCommentDto,
+        user,
+        product,
+      });
 
-      await queryRunner.manager.save(Comment, data);
+      const saved = await queryRunner.manager.save(Comment, data);
       await queryRunner.commitTransaction();
-    
-      return 'Product deleted';
+
+      return saved;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(error);
@@ -43,13 +52,11 @@ export class CommentService {
     try {
       const user = await this.userService.findOne(id);
 
-      const comment: Comment[] = await this.repository.find({
-        where : {
-          user
-        }
+      return await this.repository.find({
+        where: {
+          user,
+        },
       });
-
-      return comment;
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
@@ -58,15 +65,13 @@ export class CommentService {
   async findAllOfProduct(id: string): Promise<Comment[]> {
     try {
       const product = await this.productService.findOne(id);
-  
-      const comments: Comment[] = await this.repository.find({
+
+      return await this.repository.find({
         where: {
           product,
           parent: IsNull(),
         },
       });
-  
-      return comments;
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
@@ -78,36 +83,32 @@ export class CommentService {
         throw new BadRequestException('Id is required and should be a valid UUID');
       }
 
-      const comment: Comment | null = await this.repository.findOne({
-        where : {
-          id
-        }
-      });
+      const comment = await this.repository.findOne({ where: { id } });
 
-      if (comment == null) {
+      if (!comment) {
         throw new NotFoundException('Comment not found');
       }
 
       return comment;
-
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
   }
 
-  async update(id: string, updateCommentDto: UpdateCommentDto) {
+  async update(id: string, updateCommentDto: UpdateCommentDto): Promise<Comment> {
     const queryRunner = this.repository.manager.connection.createQueryRunner();
     await queryRunner.startTransaction();
-    
+
     try {
       const comment = await this.findOne(id);
 
       updateCommentDto.is_edited = true;
 
       await queryRunner.manager.update(Comment, id, updateCommentDto);
+
       await queryRunner.commitTransaction();
-    
-      return 'Product deleted';
+
+      return { ...comment, ...updateCommentDto } as Comment;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(error);
@@ -116,16 +117,16 @@ export class CommentService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<string> {
     const queryRunner = this.repository.manager.connection.createQueryRunner();
     await queryRunner.startTransaction();
-    
+
     try {
-      const comment = await this.findOne(id);
+      await this.findOne(id);
 
       await queryRunner.manager.delete(Comment, id);
       await queryRunner.commitTransaction();
-    
+
       return 'Comment deleted';
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -135,25 +136,25 @@ export class CommentService {
     }
   }
 
-  async createCommentOnComment(id: string, userId: number, createCommentDto: CreateCommentDto) {
+  async createCommentOnComment(id: string, userId: number, createCommentDto: CreateCommentDto): Promise<Comment> {
     const queryRunner = this.repository.manager.connection.createQueryRunner();
     await queryRunner.startTransaction();
-    
+
     try {
-      const comment = await this.findOne(id);
+      const parentComment = await this.findOne(id);
       const user = await this.userService.findOne(userId);
 
-      const data = { 
-        ...createCommentDto, 
-        user , 
-        product: comment.product , 
-        parent: comment 
-      }
+      const data = this.repository.create({
+        ...createCommentDto,
+        user,
+        product: parentComment.product,
+        parent: parentComment,
+      });
 
-      await queryRunner.manager.save(Comment, data);
+      const saved = await queryRunner.manager.save(Comment, data);
       await queryRunner.commitTransaction();
-    
-      return 'Comment created';
+
+      return saved;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(error);
@@ -162,21 +163,20 @@ export class CommentService {
     }
   }
 
-  async findCommentsOnComment(commentId: string) {
+  async findCommentsOnComment(commentId: string): Promise<Comment[]> {
     try {
-        const comment = await this.repository.findOne({
-            where: { id: commentId },
-            relations: ['replies'],
-        });
+      const comment = await this.repository.findOne({
+        where: { id: commentId },
+        relations: ['replies'],
+      });
 
-        if (!comment) {
-            throw new NotFoundException("Comment not found");
-        }
+      if (!comment) {
+        throw new NotFoundException('Comment not found');
+      }
 
-        return comment.replies;
+      return comment.replies;
     } catch (e) {
-        throw new InternalServerErrorException(e);
+      throw new InternalServerErrorException(e);
     }
   }
-
 }

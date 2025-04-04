@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -14,9 +14,16 @@ export class ProductController {
   }
 
   @Get()
-  async findAll() {
-    return await this.productService.findAll();
+  async findAll(
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    const pageNumber = Math.max(1, parseInt(page)); // Evita páginas negativas ou zero
+    const limitNumber = Math.min(100, parseInt(limit)); // Limita o máximo de itens por página
+
+    return await this.productService.findAll(pageNumber, limitNumber);
   }
+
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
