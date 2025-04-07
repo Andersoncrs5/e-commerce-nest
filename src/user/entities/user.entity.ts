@@ -5,6 +5,7 @@ import { Category } from '../../category/entities/category.entity';
 import { Comment } from '../../comment/entities/comment.entity';
 import { Product } from '../../product/entities/product.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BeforeUpdate, BeforeInsert, OneToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Cart } from '@src/cart/entities/cart.entity';
 
 @Entity('users')
 export class User {
@@ -47,6 +48,9 @@ export class User {
 
   @OneToMany(() => Product, (Product) => Product.user)
   products: Product[];
+
+  @OneToMany(() => Cart, (Cart) => Cart.user)
+  carts: Cart[];
 
   @BeforeInsert()
   @BeforeUpdate()

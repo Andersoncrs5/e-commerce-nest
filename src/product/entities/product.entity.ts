@@ -3,6 +3,7 @@ import { Category } from "../../category/entities/category.entity";
 import { User } from "../../user/entities/user.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Favorite } from "../../favorite/entity/favorite.entity";
+import { Cart } from "@src/cart/entities/cart.entity";
 
 @Entity('products')
 export class Product {
@@ -44,6 +45,9 @@ export class Product {
 
     @OneToMany(() => Comment, (comment) => comment.product, { cascade: true })
     comments: Comment[];
+
+    @OneToMany(() => Cart, (Cart) => Cart.product)
+    carts: Cart[];
 
     @ManyToOne(() => Category, (category) => category.products, { nullable: false, eager: true }) 
     category: Category;

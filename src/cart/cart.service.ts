@@ -1,0 +1,120 @@
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { CreateCartDto } from './dto/create-cart.dto';
+import { UpdateCartDto } from './dto/update-cart.dto';
+import { Repository } from 'typeorm';
+import { Cart } from './entities/cart.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserService } from '@src/user/user.service';
+import { ProductService } from '@src/product/product.service';
+import { User } from '@src/user/entities/user.entity';
+import { Product } from '@src/product/entities/product.entity';
+
+@Injectable()
+export class CartService {
+  constructor(
+    @InjectRepository(Cart)
+    private readonly repository: Repository<Cart>,
+    private readonly userService: UserService,
+    private readonly producrService: ProductService
+
+  ){}
+
+  async existsItemInCart(userId: number, productId: string): Promise<boolean> {
+    try {
+      const user: User = await this.userService.findOne(userId);
+      const product: Product = await this.producrService.findOne(productId);
+
+      const check = this.repository.exists({
+        where: {
+          user,
+          product
+        }
+      });
+
+      return check;
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
+  }
+
+  async create(userId: number, productId: string): Promise<string> {
+    const queryRunner = this.repository.manager.connection.createQueryRunner();
+    await queryRunner.startTransaction();
+    
+    try {
+      const user: User = await this.userService.findOne(userId);
+      const product: Product = await this.producrService.findOne(productId);
+
+      const data = {
+        user,
+        product
+      }
+
+      const save = await queryRunner.manager.create(Cart, data);
+      
+      await queryRunner.manager.save(save);
+      await queryRunner.commitTransaction();
+    
+      return 'Product added in cart';
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(error);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async findAllByUser(userId: number): Promise<Cart[]> {
+    try {
+      const user: User = await this.userService.findOne(userId);
+    
+      const rsult = this.repository.find({
+        where: {
+          user,
+        }
+      });
+
+      return rsult;
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
+  }
+
+  async findOne(id: number) {
+    try {
+      if (!id || id <= 0 ){
+        throw new BadRequestException('Id is required');
+      }
+
+      const result = await this.repository.findOne({
+        where: {
+          id
+        }
+      })
+
+      return result;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async remove(id: number) {
+    const queryRunner = this.repository.manager.connection.createQueryRunner();
+    await queryRunner.startTransaction();
+    
+    try {
+      const check = await this.findOne(id);
+
+      await queryRunner.manager.delete(Cart, check);
+      await queryRunner.commitTransaction();
+    
+      return 'Product deleted!!!';
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(error);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+  
+}
