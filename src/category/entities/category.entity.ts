@@ -4,7 +4,7 @@ import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGenerate
 
 @Entity()
 export class Category {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('increment', { type: 'bigint' })
     id: number;
 
     @Column({ type: 'varchar', length: 200, unique: true, nullable: false })

@@ -4,6 +4,7 @@ import { User } from "../../user/entities/user.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Favorite } from "../../favorite/entity/favorite.entity";
 import { Cart } from "@src/cart/entities/cart.entity";
+import { Order } from "@src/orders/entities/order.entity";
 
 @Entity('products')
 export class Product {
@@ -48,6 +49,9 @@ export class Product {
 
     @OneToMany(() => Cart, (Cart) => Cart.product)
     carts: Cart[];
+
+    @OneToMany(() => Order, (Order) => Order.product)
+    orders: Order[];
 
     @ManyToOne(() => Category, (category) => category.products, { nullable: false, eager: true }) 
     category: Category;

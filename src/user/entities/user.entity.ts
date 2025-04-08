@@ -6,10 +6,11 @@ import { Comment } from '../../comment/entities/comment.entity';
 import { Product } from '../../product/entities/product.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BeforeUpdate, BeforeInsert, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Cart } from '@src/cart/entities/cart.entity';
+import { Order } from '@src/orders/entities/order.entity';
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
   id: number;
 
   @Column({ length: 100 })
@@ -48,6 +49,9 @@ export class User {
 
   @OneToMany(() => Product, (Product) => Product.user)
   products: Product[];
+
+  @OneToMany(() => Order, (Order) => Order.user)
+  orders: Order[];
 
   @OneToMany(() => Cart, (Cart) => Cart.user)
   carts: Cart[];

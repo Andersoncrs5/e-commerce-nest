@@ -4,7 +4,7 @@ import { Product } from "../../product/entities/product.entity";
 
 @Entity('comments')
 export class Comment {
-    @PrimaryGeneratedColumn('increment')
+    @PrimaryGeneratedColumn('increment', { type: 'bigint' })
     id: string;
 
     @Column({ type: 'varchar', length: 500, nullable: false })
