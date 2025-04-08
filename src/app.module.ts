@@ -12,6 +12,7 @@ import { CommentModule } from './comment/comment.module';
 import { FavoriteModule } from './favorite/favorite.module';
 import { CartModule } from './cart/cart.module';
 import { OrdersModule } from './orders/orders.module';
+import { LogModule } from './log/log.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { OrdersModule } from './orders/orders.module';
     FavoriteModule,
     CartModule,
     OrdersModule,
+    LogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

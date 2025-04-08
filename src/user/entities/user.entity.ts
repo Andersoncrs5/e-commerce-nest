@@ -7,6 +7,7 @@ import { Product } from '../../product/entities/product.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, BeforeUpdate, BeforeInsert, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Cart } from '@src/cart/entities/cart.entity';
 import { Order } from '@src/orders/entities/order.entity';
+import { Log } from '@src/log/entities/log.entity';
 
 @Entity('users')
 export class User {
@@ -19,7 +20,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 400 })
   password: string;
 
   @Column({ default: false })
@@ -55,6 +56,9 @@ export class User {
 
   @OneToMany(() => Cart, (Cart) => Cart.user)
   carts: Cart[];
+
+  @OneToMany(() => Log, (Log) => Log.user)
+  logs: Log[];
 
   @BeforeInsert()
   @BeforeUpdate()
