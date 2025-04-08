@@ -8,6 +8,8 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Cart } from '@src/cart/entities/cart.entity';
 import { Order } from '@src/orders/entities/order.entity';
 import { Log } from '@src/log/entities/log.entity';
+import { ProductReview } from '@src/product_reviews/entities/product_review.entity';
+import { DiscountCoupon } from '@src/discount_coupons/entities/discount_coupon.entity';
 
 @Entity('users')
 export class User {
@@ -42,6 +44,9 @@ export class User {
   @OneToMany(() => Category, (category) => category.user)
   categories: Category[];
 
+  @OneToMany(() => ProductReview, (ProductReview) => ProductReview.user)
+  reviews: ProductReview[];
+
   @OneToMany(() => Favorite, (Favorite) => Favorite.user)
   favorites: Favorite[];
 
@@ -59,6 +64,9 @@ export class User {
 
   @OneToMany(() => Log, (Log) => Log.user)
   logs: Log[];
+
+  @OneToMany(() => DiscountCoupon, (dis) => dis.user)
+  coupons: DiscountCoupon[];
 
   @BeforeInsert()
   @BeforeUpdate()

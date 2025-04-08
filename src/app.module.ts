@@ -13,6 +13,8 @@ import { FavoriteModule } from './favorite/favorite.module';
 import { CartModule } from './cart/cart.module';
 import { OrdersModule } from './orders/orders.module';
 import { LogModule } from './log/log.module';
+import { ProductReviewsModule } from './product_reviews/product_reviews.module';
+import { DiscountCouponsModule } from './discount_coupons/discount_coupons.module';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { LogModule } from './log/log.module';
     CartModule,
     OrdersModule,
     LogModule,
+    ProductReviewsModule,
+    DiscountCouponsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

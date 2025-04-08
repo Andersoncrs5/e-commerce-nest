@@ -50,7 +50,6 @@ export class UserService {
     }
 
     return user;
-    
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User | NotFoundException | null> {

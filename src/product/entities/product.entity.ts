@@ -5,6 +5,7 @@ import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGenerate
 import { Favorite } from "../../favorite/entity/favorite.entity";
 import { Cart } from "@src/cart/entities/cart.entity";
 import { Order } from "@src/orders/entities/order.entity";
+import { ProductReview } from "@src/product_reviews/entities/product_review.entity";
 
 @Entity('products')
 export class Product {
@@ -52,6 +53,9 @@ export class Product {
 
     @OneToMany(() => Order, (Order) => Order.product)
     orders: Order[];
+
+    @OneToMany(() => ProductReview, (review) => review.product)
+    reviews: ProductReview[];
 
     @ManyToOne(() => Category, (category) => category.products, { nullable: false, eager: true }) 
     category: Category;
