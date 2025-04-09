@@ -1,28 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards, Req } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@src/auth/Guards/jwt.auth.guard';
+import { RolesGuard } from '@src/auth/Guards/roles.guard';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly service: OrdersService) {}
 
-  @Post(':productId/:userId')
+  @Post(':productId/')
   @HttpCode(HttpStatus.OK)
-  async create(@Param('productId') productId: string, @Param('userId') userId: number, order :CreateOrderDto) {
-    return this.service.create(userId, productId, order );
+  async create(@Param('productId') productId: string, @Req() req: any, order :CreateOrderDto) {
+    return this.service.create(req.user.sub, productId, order );
   }
 
   @Get('/findAllByProduct/:id')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
   async findAllByProduct(@Param('id') id: string) {
     return this.service.findAllByProduct(id);
   }
 
-  @Get('/findAllByUser/:id')
+  @Get('/findAllByUser')
   @HttpCode(HttpStatus.OK)
-  async findAllByUser(@Param('id') id: number) {
-    return this.service.findAllByUser(id);
+  async findAllByUser(@Req() req: any) {
+    return this.service.findAllByUser(req.user.sub);
   }
 
   @Patch(':id')

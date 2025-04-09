@@ -1,16 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards, Req } from '@nestjs/common';
 import { ProductReviewsService } from './product_reviews.service';
 import { CreateProductReviewDto } from './dto/create-product_review.dto';
 import { UpdateProductReviewDto } from './dto/update-product_review.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@src/auth/Guards/jwt.auth.guard';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('product-reviews')
 export class ProductReviewsController {
   constructor(private readonly productReviewsService: ProductReviewsService) {}
 
-  @Post(':userId/:productId')
+  @Post('/:productId')
   @HttpCode(HttpStatus.OK)
-  async create(@Param('userId') userId: string, @Param('productId') productId: string, @Body() createProductReviewDto: CreateProductReviewDto) {
-    return await this.productReviewsService.create(+userId, productId, createProductReviewDto);
+  async create(@Req() req: any, @Param('productId') productId: string, @Body() createProductReviewDto: CreateProductReviewDto) {
+    return await this.productReviewsService.create(req.user.sub, productId, createProductReviewDto);
   }
 
   @Get('/findAllOfProduct/:productId')
@@ -19,10 +23,10 @@ export class ProductReviewsController {
     return await this.productReviewsService.findAllOfProduct(productId);
   }
 
-  @Get('/findAllOfUser/:userId')
+  @Get('/findAllOfUser/')
   @HttpCode(HttpStatus.OK)
-  async findAllOfUser(@Param('userId') userId: string) {
-    return await this.productReviewsService.findAllOfUser(+userId);
+  async findAllOfUser(@Req() req: any) {
+    return await this.productReviewsService.findAllOfUser(req.user.sub);
   }
 
 }

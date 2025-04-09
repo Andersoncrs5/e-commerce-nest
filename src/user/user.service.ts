@@ -1,30 +1,35 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CryptoService } from '../../CryptoService';
+import { AuthService } from '@src/auth/auth.service';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class UserService {
 
   constructor(
     @InjectRepository(User)
-    private readonly repository: Repository<User>
+    private readonly repository: Repository<User>,
+    private readonly authService: AuthService
   ){}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto) {
     const queryRunner = this.repository.manager.connection.createQueryRunner();
     await queryRunner.startTransaction();
     
     try {
-      const user: User = await queryRunner.manager.create(User, createUserDto);
+      const data: User = await queryRunner.manager.create(User, createUserDto);
       
-      await queryRunner.manager.save(user);
+      await queryRunner.manager.save(data);
       await queryRunner.commitTransaction();
     
-      return user;
+      const user = await this.findUserByEmail(createUserDto.email);
+
+      return this.authService.token(user);
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
@@ -36,6 +41,36 @@ export class UserService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async login(loginDto: LoginUserDto) {
+    try {
+      const user = await this.findUserByEmail(loginDto.email);
+
+      if (!CryptoService.compare(loginDto.password, user.password)) {
+        throw new UnauthorizedException();
+      }
+
+      return this.authService.token(user);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async findUserByEmail(email: string) {
+    if (!email) {
+      throw new BadRequestException('email is required');
+    }
+
+    email = email.trim();
+
+    const user: User | null = await this.repository.findOne({ where : { email } });
+
+    if (user == null) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
   }
 
   async findOne(id: number) {

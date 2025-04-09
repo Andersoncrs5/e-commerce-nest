@@ -1,32 +1,36 @@
-import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Req, UseGuards } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@src/auth/Guards/jwt.auth.guard';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('favorite')
 export class FavoriteController {
   constructor(private readonly favoriteService: FavoriteService) {}
 
-  @Get('save/:userId/:productId')
+  @Get('/save/:productId')
   @HttpCode(HttpStatus.OK)
-  async save(@Param('userId') userId: number, @Param('productId') productId: string ){
-    return await this.favoriteService.save(userId, productId);
+  async save(@Req() req: any, @Param('productId') productId: string ){
+    return await this.favoriteService.save(req.user.sub, productId);
   }
 
-  @Get('check/:userId/:productId')
+  @Get('/check/:productId')
   @HttpCode(HttpStatus.OK)
-  async check(@Param('userId') userId: number, @Param('productId') productId: string ){
-    return await this.favoriteService.check(userId, productId);
+  async check(@Req() req: any, @Param('productId') productId: string ){
+    return await this.favoriteService.check(req.user.sub, productId);
   }
 
-  @Get('remove/:userId/:productId')
+  @Get('/remove/:productId')
   @HttpCode(HttpStatus.OK)
-  async remove(@Param('userId') userId: number, @Param('productId') productId: string ){
-    return await this.favoriteService.remove(userId, productId);
+  async remove(@Req() req: any, @Param('productId') productId: string ){
+    return await this.favoriteService.remove(req.user.sub, productId);
   }
 
-  @Get('findAllByUser/:userId')
+  @Get('/findAllByUser')
   @HttpCode(HttpStatus.OK)
-  async findAllByUser(@Param('userId') userId: number){
-    return await this.favoriteService.findAllByUser(userId);
+  async findAllByUser(@Req() req: any){
+    return await this.favoriteService.findAllByUser(req.user.sub);
   }
   
 }

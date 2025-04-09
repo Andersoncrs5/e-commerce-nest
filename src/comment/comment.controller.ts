@@ -1,25 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards, Req } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@src/auth/Guards/jwt.auth.guard';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('comment')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
-  @Post('/:productId/:userId')
+  @Post('/:productId/')
   @HttpCode(HttpStatus.OK)
   async create(
-    @Param('userId') userId: number, 
+    @Req() req: any,
     @Param('productId') productId: string, 
     @Body() createCommentDto: CreateCommentDto) {
-    return await this.commentService.create(userId, productId, createCommentDto);
+    return await this.commentService.create(req.user.sub, productId, createCommentDto);
   }
 
-  @Get('findAllOfUser/:id')
+  @Get('/findAllOfUser')
   @HttpCode(HttpStatus.OK)
-  async findAllOfUser(@Param('id') id: number) {
-    return await this.commentService.findAllOfUser(id);
+  async findAllOfUser(@Req() req: any,) {
+    return await this.commentService.findAllOfUser(req.user.sub);
   }
 
   @Get('findAllOfProduct/:id')
@@ -46,13 +50,13 @@ export class CommentController {
     return await this.commentService.remove(id);
   }
 
-  @Post('/createCommentOnComment/:id/:userId')
+  @Post('/createCommentOnComment/:id')
   @HttpCode(HttpStatus.OK)
   async createCommentOnComment(
     @Param('id') id: string, 
-    @Param('userId') userId: number, 
+    @Req() req: any,
     @Body() createCommentDto: CreateCommentDto) {
-    return await this.commentService.createCommentOnComment(id, userId, createCommentDto);
+    return await this.commentService.createCommentOnComment(id, req.user.sub, createCommentDto);
   }
   
   @Get('/findCommentsOnComment/:id')

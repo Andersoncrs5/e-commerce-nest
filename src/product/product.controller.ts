@@ -1,17 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpStatus, HttpCode, UseGuards, Req } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { UUID } from 'crypto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@src/auth/Guards/jwt.auth.guard';
+import { RolesGuard } from '@src/auth/Guards/roles.guard';
 
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
-  @Post(':userId')
+  @Post('')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(HttpStatus.OK)
-  async create(@Param('userId') userId: number, @Body() createProductDto: CreateProductDto) {
-    return await this.productService.create(userId, createProductDto);
+  async create(@Req() req: any, @Body() createProductDto: CreateProductDto) {
+    return await this.productService.create(req.user.sub, createProductDto);
   }
 
   @Get()
@@ -20,8 +25,8 @@ export class ProductController {
     @Query('page') page = '1',
     @Query('limit') limit = '10',
   ) {
-    const pageNumber = Math.max(1, parseInt(page)); // Evita páginas negativas ou zero
-    const limitNumber = Math.min(100, parseInt(limit)); // Limita o máximo de itens por página
+    const pageNumber = Math.max(1, parseInt(page)); 
+    const limitNumber = Math.min(100, parseInt(limit));
 
     return await this.productService.findAll(pageNumber, limitNumber);
   }
@@ -34,18 +39,24 @@ export class ProductController {
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return await this.productService.update(id, updateProductDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async remove(@Param('id') id: string) {
     return await this.productService.remove(id);
   }
 
   @Get('changeStatus/:id')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async changeStatus(@Param('id') id: string) {
     return await this.productService.changeStatus(id);
   }

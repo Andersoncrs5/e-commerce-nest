@@ -1,33 +1,37 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode, UseGuards, Req } from '@nestjs/common';
 import { AddressService } from './address.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@src/auth/Guards/jwt.auth.guard';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('address')
 export class AddressController {
   constructor(private readonly addressService: AddressService) {}
 
-  @Post('/:userId')
+  @Post()
   @HttpCode(HttpStatus.OK)
-  async create(@Param('userId') userId: string, @Body() createAddressDto: CreateAddressDto) {
-    return this.addressService.create(+userId, createAddressDto);
+  async create(@Req() req: any, @Body() createAddressDto: CreateAddressDto) {
+    return this.addressService.create(req.user.sub, createAddressDto);
   }
 
-  @Get(':id')
+  @Get()
   @HttpCode(HttpStatus.OK)
-  async findOne(@Param('id') id: string) {
-    return await this.addressService.findOne(+id);
+  async findOne(@Req() req: any) {
+    return await this.addressService.findOne(req.user.sub);
   }
 
-  @Patch(':id')
+  @Patch()
   @HttpCode(HttpStatus.OK)
-  async update(@Param('id') id: string, @Body() updateAddressDto: UpdateAddressDto) {
-    return await this.addressService.update(+id, updateAddressDto);
+  async update(@Req() req: any, @Body() updateAddressDto: UpdateAddressDto) {
+    return await this.addressService.update(req.user.sub, updateAddressDto);
   }
 
-  @Delete(':id')
+  @Delete()
   @HttpCode(HttpStatus.OK)
-  async remove(@Param('id') id: string) {
-    return await this.addressService.remove(+id);
+  async remove(@Req() req: any) {
+    return await this.addressService.remove(req.user.sub);
   }
 }
