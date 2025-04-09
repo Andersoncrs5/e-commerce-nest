@@ -46,33 +46,49 @@ export class OrdersService {
     }
   }
 
-  async findAllByUser(userId: number): Promise<Order[]> {
+  async findAllByUser(userId: number, page: number, limit: number) {
     try {
       const user: User = await this.userService.findOne(userId);
 
-      const result = await this.repository.find({
+      const [result, count] = await this.repository.findAndCount({
         where: {
           user
-        }
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { id: 'ASC' }
       });
 
-      return result;
+      return {
+        data: result,
+        totalItems: count,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+      };
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
   }
 
-  async findAllByProduct(productId: string): Promise<Order[]> {
+  async findAllByProduct(productId: string, page: number, limit: number) {
     try {
       const product: Product = await this.producrService.findOne(productId);
 
-      const result = await this.repository.find({
+      const [result, count] = await this.repository.findAndCount({
         where: {
           product
-        }
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { id: 'ASC' }
       });
 
-      return result;
+      return {
+        data: result,
+        totalItems: count,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+      };
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

@@ -45,9 +45,20 @@ export class ShippingService {
     }
   }
 
-  async findAll() {
+  async findAll(page: number, limit: number) {
     try {    
-      return await this.repository.find();
+      const [shippings, count] = await this.repository.findAndCount({
+        skip: (page - 1) * limit,
+        take: limit,
+        order: {id : 'ASC' }
+      });
+
+      return {
+        data: shippings,
+        totalItems: count,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+      };
     } catch (e) {
       throw new InternalServerErrorException(e);
     }

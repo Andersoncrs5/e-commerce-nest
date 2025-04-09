@@ -1,6 +1,6 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@src/auth/Guards/jwt.auth.guard';
 
 @ApiBearerAuth()
@@ -28,9 +28,17 @@ export class FavoriteController {
   }
 
   @Get('/findAllByUser')
-  @HttpCode(HttpStatus.OK)
-  async findAllByUser(@Req() req: any){
-    return await this.favoriteService.findAllByUser(req.user.sub);
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Número da página' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10, description: 'Quantidade de itens por página (máximo 100)' })
+  async findAllByUser(
+    @Req() req: any,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    const pageNumber = Math.max(1, parseInt(page));
+    const limitNumber = Math.min(100, parseInt(limit));
+
+    return await this.favoriteService.findAllByUser(req.user.sub, pageNumber, limitNumber);
   }
   
 }

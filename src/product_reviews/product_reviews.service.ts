@@ -41,33 +41,49 @@ export class ProductReviewsService {
     }
   }
 
-  async findAllOfUser(userId:number) {
+  async findAllOfUser(userId:number, page: number, limit: number) {
     try {
       const user = await this.userService.findOne(userId);
 
-      const reviews: Promise<ProductReview[]> = this.repository.find({
+      const [reviews, count] = await this.repository.findAndCount({
         where: {
           user
-        }
-      })
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { id: 'ASC' }
+      });
 
-      return reviews;
+      return {
+        data: reviews,
+        totalItems: count,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+      };
     } catch(e) {
       throw new InternalServerErrorException();
     }
   }
 
-  async findAllOfProduct(productId:string) {
+  async findAllOfProduct(productId:string, page: number, limit: number) {
     try {
       const product = await this.productService.findOne(productId);
 
-      const reviews: Promise<ProductReview[]> = this.repository.find({
+      const [reviews, count] = await this.repository.findAndCount({
         where: {
           product
-        }
-      })
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { id: 'ASC' }
+      });
 
-      return reviews;
+      return {
+        data: reviews,
+        totalItems: count,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+      };
     } catch(e) {
       throw new InternalServerErrorException();
     }

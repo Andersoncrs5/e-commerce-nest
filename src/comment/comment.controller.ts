@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards, Req, Query } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@src/auth/Guards/jwt.auth.guard';
 
 @ApiBearerAuth()
@@ -22,14 +22,30 @@ export class CommentController {
 
   @Get('/findAllOfUser')
   @HttpCode(HttpStatus.OK)
-  async findAllOfUser(@Req() req: any,) {
-    return await this.commentService.findAllOfUser(req.user.sub);
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Número da página' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10, description: 'Quantidade de itens por página (máximo 100)' })
+  async findAll(
+    @Req() req: any,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    const pageNumber = Math.max(1, parseInt(page));
+    const limitNumber = Math.min(100, parseInt(limit));
+    return await this.commentService.findAllOfUser(req.user.sub, pageNumber, limitNumber);
   }
 
   @Get('findAllOfProduct/:id')
   @HttpCode(HttpStatus.OK)
-  async findAllOfProduct(@Param('id') id: string) {
-    return await this.commentService.findAllOfProduct(id);
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Número da página' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10, description: 'Quantidade de itens por página (máximo 100)' })
+  async findAllOfProduct(
+    @Param('id') id: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    const pageNumber = Math.max(1, parseInt(page));
+    const limitNumber = Math.min(100, parseInt(limit));
+    return await this.commentService.findAllOfProduct(id,pageNumber, limitNumber);
   }
 
   @Get(':id')

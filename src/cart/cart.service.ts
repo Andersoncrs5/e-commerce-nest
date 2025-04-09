@@ -64,17 +64,25 @@ export class CartService {
     }
   }
 
-  async findAllByUser(userId: number): Promise<Cart[]> {
+  async findAllByUser(userId: number,page: number, limit: number) {
     try {
       const user: User = await this.userService.findOne(userId);
     
-      const rsult = this.repository.find({
+      const [result, count] = await this.repository.findAndCount({
         where: {
           user,
-        }
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { id: 'ASC' }
       });
 
-      return rsult;
+      return {
+        data: result,
+        totalItems: count,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+      };
     } catch (e) {
       throw new InternalServerErrorException(e);
     }

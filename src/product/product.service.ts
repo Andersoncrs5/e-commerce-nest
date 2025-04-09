@@ -52,7 +52,8 @@ export class ProductService {
 
   async findAll(page: number, limit: number) {
     try {
-      const [products, count] = await this.repository.findAndCount({
+      const [products, count] = await this.repository.
+      findAndCount({
         skip: (page - 1) * limit,
         take: limit,
         order: { id: 'ASC' }

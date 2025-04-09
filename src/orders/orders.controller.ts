@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards, Req, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@src/auth/Guards/jwt.auth.guard';
 import { RolesGuard } from '@src/auth/Guards/roles.guard';
 
@@ -21,14 +21,33 @@ export class OrdersController {
   @Get('/findAllByProduct/:id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(RolesGuard)
-  async findAllByProduct(@Param('id') id: string) {
-    return this.service.findAllByProduct(id);
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Número da página' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10, description: 'Quantidade de itens por página (máximo 100)' })
+  async findAllByProduct(
+    @Param('id') id: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    const pageNumber = Math.max(1, parseInt(page));
+    const limitNumber = Math.min(100, parseInt(limit));
+
+    return this.service.findAllByProduct(id, pageNumber, limitNumber);
   }
 
   @Get('/findAllByUser')
   @HttpCode(HttpStatus.OK)
-  async findAllByUser(@Req() req: any) {
-    return this.service.findAllByUser(req.user.sub);
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Número da página' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10, description: 'Quantidade de itens por página (máximo 100)' })
+  async findAllByUser(
+    @Req() req: any,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+
+    const pageNumber = Math.max(1, parseInt(page));
+    const limitNumber = Math.min(100, parseInt(limit));
+
+    return this.service.findAllByUser(req.user.sub, pageNumber, limitNumber);
   }
 
   @Patch(':id')

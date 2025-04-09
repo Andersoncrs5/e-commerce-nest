@@ -3,7 +3,7 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { UUID } from 'crypto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@src/auth/Guards/jwt.auth.guard';
 import { RolesGuard } from '@src/auth/Guards/roles.guard';
 
@@ -19,13 +19,16 @@ export class ProductController {
     return await this.productService.create(req.user.sub, createProductDto);
   }
 
+
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Número da página' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10, description: 'Quantidade de itens por página (máximo 100)' })
   async findAll(
     @Query('page') page = '1',
-    @Query('limit') limit = '10',
+    @Query('limit') limit = '40',
   ) {
-    const pageNumber = Math.max(1, parseInt(page)); 
+    const pageNumber = Math.max(1, parseInt(page));
     const limitNumber = Math.min(100, parseInt(limit));
 
     return await this.productService.findAll(pageNumber, limitNumber);

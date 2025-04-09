@@ -48,30 +48,50 @@ export class CommentService {
     }
   }
 
-  async findAllOfUser(id: number): Promise<Comment[]> {
+  async findAllOfUser(id: number, page: number, limit: number) {
     try {
       const user = await this.userService.findOne(id);
 
-      return await this.repository.find({
+      const [result, count] = await this.repository.findAndCount({
         where: {
           user,
         },
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { id: 'ASC' }
       });
+
+      return {
+        data: result,
+        totalItems: count,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+      };
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
   }
 
-  async findAllOfProduct(id: string): Promise<Comment[]> {
+  async findAllOfProduct(id: string, page: number, limit: number) {
     try {
       const product = await this.productService.findOne(id);
 
-      return await this.repository.find({
+      const [result, count] = await this.repository.findAndCount({
         where: {
           product,
           parent: IsNull(),
         },
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { id: 'ASC' }
       });
+
+      return {
+        data: result,
+        totalItems: count,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+      };
     } catch (e) {
       throw new InternalServerErrorException(e);
     }

@@ -81,16 +81,24 @@ export class FavoriteService {
         }
     }
 
-    async findAllByUser(userId: number): Promise<Favorite[]>{
+    async findAllByUser(userId: number, page: number, limit: number) {
         const user: User = await this.userService.findOne(userId);
 
-        const favorites: Favorite[] = await this.repository.find({
+        const [result, count] = await this.repository.findAndCount({
             where:{
                 user
-            }
+            },
+            skip: (page - 1) * limit,
+            take: limit,
+            order: { id: 'ASC' }
         });
 
-        return favorites;
+        return {
+            data: result,
+            totalItems: count,
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+          };
     }
 
 }
