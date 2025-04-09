@@ -1,4 +1,5 @@
 import { Product } from '@src/product/entities/product.entity';
+import { Shipping } from '@src/shipping/entities/shipping.entity';
 import { User } from '@src/user/entities/user.entity';
 import {
     Entity,
@@ -6,7 +7,8 @@ import {
     Column,
     CreateDateColumn,
     ManyToOne,
-    JoinColumn
+    JoinColumn,
+    OneToMany
   } from 'typeorm';
   
   
@@ -54,6 +56,9 @@ import {
     })
     sale_status: SaleStatus;
   
+    @OneToMany(() => Shipping, (Shipping) => Shipping.order)
+    shippings: Shipping[];
+
     @Column({
       type: 'enum',
       enum: ShippingStatus,

@@ -1,5 +1,6 @@
+import { Shipping } from "@src/shipping/entities/shipping.entity";
 import { User } from "../../user/entities/user.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('address')
 export class Address {
@@ -33,6 +34,9 @@ export class Address {
     @OneToOne(() => User, (user) => user.address, { onDelete : 'CASCADE' })
     @JoinColumn({  })
     user: User;
+
+    @OneToMany(() => Shipping, (ship) => ship.address, { cascade: true, onDelete : 'CASCADE' })
+    shippings: Shipping[];
 
     @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     created_at: Date;

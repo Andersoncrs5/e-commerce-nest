@@ -15,6 +15,7 @@ import { OrdersModule } from './orders/orders.module';
 import { LogModule } from './log/log.module';
 import { ProductReviewsModule } from './product_reviews/product_reviews.module';
 import { DiscountCouponsModule } from './discount_coupons/discount_coupons.module';
+import { ShippingModule } from './shipping/shipping.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { DiscountCouponsModule } from './discount_coupons/discount_coupons.modul
     LogModule,
     ProductReviewsModule,
     DiscountCouponsModule,
+    ShippingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
