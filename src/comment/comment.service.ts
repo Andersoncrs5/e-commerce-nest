@@ -12,6 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from '../user/user.service';
 import { ProductService } from '../product/product.service';
 import { isUUID } from 'class-validator';
+import { ValidsService } from '@src/valids/valids.service';
 
 @Injectable()
 export class CommentService {
@@ -19,6 +20,7 @@ export class CommentService {
     @InjectRepository(Comment)
     private readonly repository: Repository<Comment>,
     private readonly userService: UserService,
+    private readonly valids: ValidsService,
     private readonly productService: ProductService
   ) {}
 
@@ -99,17 +101,11 @@ export class CommentService {
 
   async findOne(id: string): Promise<Comment> {
     try {
-      if (!id || !isUUID(id)) {
-        throw new BadRequestException('Id is required and should be a valid UUID');
-      }
+      this.valids.IsNotNullIdAndValidUUID(id);
 
       const comment = await this.repository.findOne({ where: { id } });
 
-      if (!comment) {
-        throw new NotFoundException('Comment not found');
-      }
-
-      return comment;
+      return await this.valids.IsNotNullObject(comment, 'Comment not found');
     } catch (e) {
       throw new InternalServerErrorException(e);
     }

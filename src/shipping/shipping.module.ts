@@ -6,9 +6,10 @@ import { Shipping } from './entities/shipping.entity';
 import { OrdersModule } from '@src/orders/orders.module';
 import { AddressModule } from '@src/address/address.module';
 import { UserModule } from '@src/user/user.module';
+import { ValidsModule } from '@src/valids/valids.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Shipping]), OrdersModule, AddressModule, UserModule],
+  imports: [TypeOrmModule.forFeature([Shipping]), OrdersModule, AddressModule, UserModule, ValidsModule],
   controllers: [ShippingController],
   providers: [ShippingService],
 })

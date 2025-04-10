@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CryptoService } from '../../CryptoService';
 import { AuthService } from '@src/auth/auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
+import { ValidsService } from '@src/valids/valids.service';
 
 @Injectable()
 export class UserService {
@@ -14,7 +15,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly repository: Repository<User>,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly valid: ValidsService
   ){}
 
   async create(createUserDto: CreateUserDto) {
@@ -66,25 +68,15 @@ export class UserService {
 
     const user: User | null = await this.repository.findOne({ where : { email } });
 
-    if (user == null) {
-      throw new NotFoundException('User not found');
-    }
-
-    return user;
+    return await this.valid.IsNotNullObject(user, 'User not found');;;
   }
 
-  async findOne(id: number) {
-    if (!id || isNaN(id) || id <= 0) {
-      throw new BadRequestException('ID must be a positive number');
-    }
+  async findOne(id: number): Promise<User> {
+    await this.valid.IsNotNullId(id);
 
-    const user: User | null = await this.repository.findOne({ where : { id } });
+    let user: User | null = await this.repository.findOne({ where : { id } });
 
-    if (user == null) {
-      throw new NotFoundException('User not found');
-    }
-
-    return user;
+    return await this.valid.IsNotNullObject(user, 'User not found');;
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User | NotFoundException | null> {

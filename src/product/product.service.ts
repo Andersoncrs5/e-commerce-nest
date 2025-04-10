@@ -11,6 +11,7 @@ import { CategoryService } from '../category/category.service';
 import { User } from '../user/entities/user.entity';
 import { Category } from '../category/entities/category.entity';
 import { isUUID } from 'class-validator';
+import { ValidsService } from '@src/valids/valids.service';
 
 @Injectable()
 export class ProductService {
@@ -18,7 +19,8 @@ export class ProductService {
     @InjectRepository(Product)
     private readonly repository: Repository<Product>,
     private readonly userService: UserService,
-    private readonly categoryService: CategoryService
+    private readonly categoryService: CategoryService,
+    private readonly valids: ValidsService
   ){}
 
   async create(userId: number, createProductDto: CreateProductDto) {
@@ -73,17 +75,11 @@ export class ProductService {
 
   async findOne(id: string): Promise<Product> {
     try {
-      if (!id || !isUUID(id)) {
-        throw new BadRequestException('Id is required and should be a valid UUID');
-      }
+      this.valids.IsNotNullIdAndValidUUID(id);
     
       const product = await this.repository.findOne({ where: { id } });
     
-      if (!product) {
-        throw new NotFoundException('Product not found');
-      }
-    
-      return product;
+      return this.valids.IsNotNullObject(product, 'Product not found');
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

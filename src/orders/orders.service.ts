@@ -8,6 +8,7 @@ import { ProductService } from '@src/product/product.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@src/user/entities/user.entity';
 import { Product } from '@src/product/entities/product.entity';
+import { ValidsService } from '@src/valids/valids.service';
 
 @Injectable()
 export class OrdersService {
@@ -17,7 +18,8 @@ export class OrdersService {
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
     private readonly userService: UserService,
-    private readonly producrService: ProductService
+    private readonly producrService: ProductService,
+    private readonly valids: ValidsService
   ){}
 
   async create(userId:number, productId: string, createOrderDto: CreateOrderDto): Promise<string> {
@@ -96,9 +98,7 @@ export class OrdersService {
 
   async findOne(id: number): Promise<Order> {
     try {
-      if (!id || isNaN(id) || id <= 0) {
-        throw new BadRequestException('ID must be a positive number');
-      }
+      this.valids.IsNotNullId(id);
 
       const result: Order | null = await this.repository.findOne({
         where: {
@@ -106,11 +106,7 @@ export class OrdersService {
         }
       });
 
-      if (result == null) {
-        throw new NotFoundException('Order not found');
-      }
-
-      return result;
+      return this.valids.IsNotNullObject(result, 'Order not found');
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

@@ -8,6 +8,7 @@ import { UserService } from '@src/user/user.service';
 import { ProductService } from '@src/product/product.service';
 import { User } from '@src/user/entities/user.entity';
 import { Product } from '@src/product/entities/product.entity';
+import { ValidsService } from '@src/valids/valids.service';
 
 @Injectable()
 export class ProductReviewsService {
@@ -15,7 +16,8 @@ export class ProductReviewsService {
     @InjectRepository(ProductReview)
     private readonly repository: Repository<ProductReview>,
     private readonly userService: UserService,
-    private readonly productService: ProductService
+    private readonly productService: ProductService,
+    private readonly valids: ValidsService,
   ) {
 
   }
@@ -90,17 +92,11 @@ export class ProductReviewsService {
   }
 
   async findOne(id: number) {
-    if (!id || isNaN(id) || id <= 0) {
-      throw new BadRequestException('ID must be a positive number');
-    }
+    this.valids.IsNotNullId(id);
 
     const review: ProductReview | null = await this.repository.findOne({ where : { id } });
     
-    if (review == null) {
-      throw new NotFoundException('review not found');
-    }
-
-    return review;
+    return this.valids.IsNotNullObject(review, 'review not found');
   }
 
 }

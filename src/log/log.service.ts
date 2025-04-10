@@ -6,12 +6,14 @@ import { Log } from './entities/log.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from '@src/user/user.service';
 import { User } from '@src/user/entities/user.entity';
+import { ValidsService } from '@src/valids/valids.service';
 
 @Injectable()
 export class LogService {
   constructor(
     @InjectRepository(Log)
     private readonly repository: Repository<Log>,
+    private readonly valids: ValidsService,
     private readonly userService: UserService
   ){}
 
@@ -48,17 +50,11 @@ export class LogService {
 
   async findOne(id: number): Promise<Log> {
     try {
-      if (!id || isNaN(id) || id <= 0) {
-        throw new BadRequestException('ID must be a positive number');
-      }
+      this.valids.IsNotNullId(id);
 
       const log : Log | null = await this.repository.findOne({ where:{ id } });
 
-      if (log == null) {
-        throw new NotFoundException();
-      }
-
-      return log;
+      return this.valids.IsNotNullObject(log, 'Log not found');
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

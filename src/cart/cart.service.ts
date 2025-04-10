@@ -8,12 +8,14 @@ import { UserService } from '@src/user/user.service';
 import { ProductService } from '@src/product/product.service';
 import { User } from '@src/user/entities/user.entity';
 import { Product } from '@src/product/entities/product.entity';
+import { ValidsService } from '@src/valids/valids.service';
 
 @Injectable()
 export class CartService {
   constructor(
     @InjectRepository(Cart)
     private readonly repository: Repository<Cart>,
+    private readonly valids: ValidsService,
     private readonly userService: UserService,
     private readonly producrService: ProductService
 
@@ -90,9 +92,7 @@ export class CartService {
 
   async findOne(id: number) {
     try {
-      if (!id || id <= 0 ){
-        throw new BadRequestException('Id is required');
-      }
+      this.valids.IsNotNullId(id);
 
       const result = await this.repository.findOne({
         where: {
@@ -100,7 +100,7 @@ export class CartService {
         }
       })
 
-      return result;
+      return this.valids.IsNotNullObject(result, 'Product not found');
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

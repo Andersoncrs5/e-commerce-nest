@@ -6,12 +6,14 @@ import { Category } from './entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
+import { ValidsService } from '@src/valids/valids.service';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly repository: Repository<Category>,
+    private readonly valids: ValidsService,
     private readonly userService: UserService
   ){}
 
@@ -51,17 +53,11 @@ export class CategoryService {
 
   async findOne(id: number): Promise<Category> {
     try {
-      if (!id || isNaN(id) || id <= 0) {
-        throw new BadRequestException('ID must be a positive number');
-      }
+      this.valids.IsNotNullId(id);
 
       const Category: Category | null = await this.repository.findOne({ where : { id } });
 
-      if (Category == null) {
-        throw new NotFoundException('Category not found');
-      }
-
-      return Category;
+      return this.valids.IsNotNullObject(Category);
     } catch (e) {
       throw new InternalServerErrorException(e)
     }

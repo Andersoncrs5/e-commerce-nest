@@ -4,12 +4,14 @@ import { UpdateDiscountCouponDto } from './dto/update-discount_coupon.dto';
 import { Repository } from 'typeorm';
 import { DiscountCoupon } from './entities/discount_coupon.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ValidsService } from '@src/valids/valids.service';
 
 @Injectable()
 export class DiscountCouponsService {
   constructor(
     @InjectRepository(DiscountCoupon)
-    private readonly repository: Repository<DiscountCoupon>
+    private readonly repository: Repository<DiscountCoupon>,
+    private readonly valids: ValidsService,
   ){}
 
   async create(createDiscountCouponDto: CreateDiscountCouponDto): Promise<string> {
@@ -61,17 +63,11 @@ export class DiscountCouponsService {
 
   async findOne(id: number) {
     try {
-      if (!id || isNaN(id) || id <= 0) {
-        throw new BadRequestException('ID must be a positive number');
-      }
+      this.valids.IsNotNullId(id);
 
       const Coupon: DiscountCoupon | null = await this.repository.findOne({ where : { id } });
 
-      if (Coupon == null) {
-        throw new NotFoundException('Coupon not found');
-      }
-
-      return Coupon;
+      return this.valids.IsNotNullObject(Coupon, 'Coupon not found');
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -119,7 +115,6 @@ export class DiscountCouponsService {
 
   async checkActivedCoupon(id: number): Promise<boolean> {
     try {
-      
       const result = await this.findOne(id);
 
       return result ? true : false;

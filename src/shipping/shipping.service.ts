@@ -8,6 +8,7 @@ import { isUUID } from 'class-validator';
 import { OrdersService } from '@src/orders/orders.service';
 import { AddressService } from '@src/address/address.service';
 import { UserService } from '@src/user/user.service';
+import { ValidsService } from '@src/valids/valids.service';
 
 @Injectable()
 export class ShippingService {
@@ -17,6 +18,7 @@ export class ShippingService {
     private readonly orderService: OrdersService,
     private readonly addressService: AddressService,
     private readonly userService: UserService,
+    private readonly  valids: ValidsService,
   ){}
 
   async create(orderId: number, userId: number, createShippingDto: CreateShippingDto) {
@@ -64,19 +66,13 @@ export class ShippingService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string):  Promise<Shipping> {
     try {
-      if (!id || !isUUID(id)) {
-        throw new BadRequestException('Id is required and should be a valid UUID');
-      }
+      await this.valids.IsNotNullIdAndValidUUID(id, 'Id is required and should be a valid UUID');
     
-      const Shipping = await this.repository.findOne({ where: { id } });
-    
-      if (!Shipping) {
-        throw new NotFoundException('Shipping not found');
-      }
-    
-      return Shipping;
+      const ship: Shipping | null = await this.repository.findOne({ where: { id } });
+  
+      return await this.valids.IsNotNullObject(ship, 'Shipping not found');;;
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
